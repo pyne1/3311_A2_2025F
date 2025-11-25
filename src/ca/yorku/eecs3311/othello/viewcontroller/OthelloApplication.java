@@ -1,6 +1,8 @@
-
 package ca.yorku.eecs3311.othello.viewcontroller;
 import ca.yorku.eecs3311.othello.model.*;
+
+import java.io.File;
+import java.io.IOException;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -10,6 +12,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class OthelloApplication extends Application {
@@ -24,18 +27,14 @@ public class OthelloApplication extends Application {
 	private Label statusLabel;
 	private ChoiceBox<String> p1Choice;
 	private ChoiceBox<String> p2Choice;
+	private Stage primaryStage;
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		// Create and hook up the Model, View and the controller
-		
-		// MODEL
+		this.primaryStage = stage;
+
 		othello = new Othello();
 		
-		// CONTROLLER
-		// CONTROLLER->MODEL hookup
-	
-		// VIEW
 		root = new BorderPane();
 		statusLabel = new Label();
 		statusLabel.setPadding(new Insets(5));
@@ -52,6 +51,8 @@ public class OthelloApplication extends Application {
 		Button restartButton = new Button("Restart");
 		Button undoButton = new Button("Undo");
 		Button redoButton = new Button("Redo");
+		Button saveButton = new Button("Save");
+		Button loadButton = new Button("Load");
 
 		restartButton.setOnAction(e -> startNewGame());
 		undoButton.setOnAction(e -> {
@@ -60,22 +61,20 @@ public class OthelloApplication extends Application {
 		redoButton.setOnAction(e -> {
 			if (boardView != null) boardView.redoLastMove();
 		});
+		saveButton.setOnAction(e -> saveGame());
+		loadButton.setOnAction(e -> loadGame());
 
 		HBox topBar = new HBox(10, new Label("P1:"), p1Choice, new Label("P2:"), p2Choice,
-				restartButton, undoButton, redoButton);
+				restartButton, undoButton, redoButton, saveButton, loadButton);
 		topBar.setPadding(new Insets(10));
 		root.setTop(topBar);
 
 		startNewGame();
 		
-		// VIEW->CONTROLLER hookup
-		// MODEL->VIEW hookup
-		
 		Scene scene = new Scene(root); 
 		stage.setTitle("Othello");
 		stage.setScene(scene);
 				
-		// LAUNCH THE GUI
 		stage.show();
 	}
 
@@ -97,6 +96,39 @@ public class OthelloApplication extends Application {
 			return new PlayerGreedy(othello, player);
 		} else {
 			return null;
+		}
+	}
+
+	private void saveGame() {
+		if (othello == null) return;
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Save Othello Game");
+		fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Othello Save Files", "*.txt"));
+		File file = fc.showSaveDialog(primaryStage);
+		if (file != null) {
+			try {
+				othello.saveToFile(file);
+				statusLabel.setText("Game saved.");
+			} catch (IOException ex) {
+				statusLabel.setText("Error saving game.");
+			}
+		}
+	}
+
+	private void loadGame() {
+		if (othello == null) return;
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Load Othello Game");
+		fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Othello Save Files", "*.txt"));
+		File file = fc.showOpenDialog(primaryStage);
+		if (file != null) {
+			try {
+				othello.loadFromFile(file);
+				if (boardView != null) boardView.clearHistory();
+				statusLabel.setText("Game loaded.");
+			} catch (IOException ex) {
+				statusLabel.setText("Error loading game.");
+			}
 		}
 	}
 

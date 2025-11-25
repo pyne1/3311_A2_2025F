@@ -1,6 +1,13 @@
 package ca.yorku.eecs3311.othello.model;
 import ca.yorku.eecs3311.util.*;
 import java.util.Random;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 import ca.yorku.eecs3311.util.Observable;
 
@@ -162,6 +169,56 @@ public class Othello extends Observable {
 		}
 
 	}
+	
+	public void saveToFile(File file) throws IOException {
+		int dim = this.board.getDimension();
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+			bw.write(Integer.toString(dim));
+			bw.newLine();
+			bw.write(Character.toString(this.whosTurn));
+			bw.newLine();
+			bw.write(Integer.toString(this.numMoves));
+			bw.newLine();
+			for (int row = 0; row < dim; row++) {
+				StringBuilder sb = new StringBuilder();
+				for (int col = 0; col < dim; col++) {
+					sb.append(this.board.get(row, col));
+				}
+				bw.write(sb.toString());
+				bw.newLine();
+			}
+		}
+	}
+
+	public void loadFromFile(File file) throws IOException {
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line = br.readLine();
+			int dim = Integer.parseInt(line.trim());
+			String turnLine = br.readLine();
+			char turn = turnLine.charAt(0);
+			String movesLine = br.readLine();
+			int moves = Integer.parseInt(movesLine.trim());
+
+			OthelloBoard newBoard = new OthelloBoard(dim);
+			for (int row = 0; row < dim; row++) {
+				String rowLine = br.readLine();
+				if (rowLine == null) rowLine = "";
+				for (int col = 0; col < dim; col++) {
+					char ch = ' ';
+					if (col < rowLine.length()) {
+						ch = rowLine.charAt(col);
+					}
+					newBoard.set(row, col, ch);
+				}
+			}
+
+			this.board = newBoard;
+			this.whosTurn = turn;
+			this.numMoves = moves;
+			this.notifyObservers();
+		}
+	}
+
 }
 
 

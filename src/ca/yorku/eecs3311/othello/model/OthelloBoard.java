@@ -211,6 +211,13 @@ public class OthelloBoard {
 		return false;
 	}
 
+	
+	public void set(int row, int col, char token) {
+		if (this.validCoordinate(row, col)) {
+			this.board[row][col] = token;
+		}
+	}
+
 	/**
 	 * 
 	 * @param player P1 or P2

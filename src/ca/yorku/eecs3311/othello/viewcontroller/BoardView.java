@@ -190,4 +190,10 @@ public class BoardView extends GridPane implements Observer {
             }
         }
     }
+    
+    public void clearHistory() {
+    	undoStack.clear();
+    	redoStack.clear();
+    }
+
 }
